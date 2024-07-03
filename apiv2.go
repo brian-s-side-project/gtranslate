@@ -3,7 +3,7 @@ package gtranslate
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -99,7 +99,7 @@ func translate(text, from, to string, withVerification bool, tries int, delay ti
 		}
 	}
 
-	raw, err := ioutil.ReadAll(r.Body)
+	raw, err := io.ReadAll(r.Body)
 	if err != nil {
 		return "", err
 	}
@@ -111,8 +111,13 @@ func translate(text, from, to string, withVerification bool, tries int, delay ti
 		return "", err
 	}
 
+	texts, ok := resp[0].([]interface{})
+	if !ok {
+		return "", fmt.Errorf("unexpected response format")
+	}
+
 	responseText := ""
-	for _, obj := range resp[0].([]interface{}) {
+	for _, obj := range texts {
 		if len(obj.([]interface{})) == 0 {
 			break
 		}
